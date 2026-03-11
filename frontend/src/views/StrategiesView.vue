@@ -106,7 +106,7 @@ function removeProvider(id:string) { selectedOrder.value=selectedOrder.value.fil
 function onDragStart(idx:number,e:DragEvent) { dragIdx.value=idx; if(e.dataTransfer){e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',String(idx));} }
 function onDragOver(idx:number,e:DragEvent) { dropIdx.value=idx; if(e.dataTransfer) e.dataTransfer.dropEffect='move'; }
 function onDrop(target:number) { const from=dragIdx.value; if(from<0||from===target){dropIdx.value=-1;return;} const list=[...selectedOrder.value]; const[moved]=list.splice(from,1); list.splice(target,0,moved); selectedOrder.value=list; dragIdx.value=-1; dropIdx.value=-1; }
-const openclawConfig = computed(()=>{ if(!showGuide.value) return ''; return JSON.stringify({baseUrl:`${baseUrl.value}/v1`,apiKey:showGuide.value.key0,api:'openai-completions'},null,2); });
+const openclawConfig = computed(()=>{ if(!showGuide.value) return ''; return JSON.stringify({baseUrl:`${baseUrl.value}/v1`,apiKey:showGuide.value.key0,api:'openai-completions',models:'DependsOnAKDN'},null,2); });
 const curlCommand = computed(()=>{ if(!showGuide.value) return ''; return `curl ${baseUrl.value}/v1/chat/completions \\\n  -H "Authorization: Bearer ${showGuide.value.key0}" \\\n  -H "Content-Type: application/json" \\\n  -d '{"model":"akdn","messages":[{"role":"user","content":"hello"}]}'`; });
 let toastTimer:ReturnType<typeof setTimeout>;
 function copy(text:string) {
