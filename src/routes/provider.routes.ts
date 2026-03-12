@@ -1,33 +1,56 @@
 import { FastifyInstance } from 'fastify';
-import { execFile } from 'child_process';
-import { promisify } from 'util';
+import { spawn } from 'child_process';
 import { authMiddleware } from '../middleware/auth';
 import * as providerService from '../services/provider.service';
 import { PROVIDER_PRESETS } from '../utils/constants';
 
-const execFileAsync = promisify(execFile);
-
 interface TestStep {
-  step: string;   // i18n key: 'proxy_test' | 'api_test'
+  step: string;
   status: 'ok' | 'fail' | 'skip';
   detail?: string;
   lines?: Array<{ label: string; value: string }>;
   model?: string;
-  responded?: boolean; // API returned a valid response
+  responded?: boolean;
   ms?: number;
-  errorRaw?: string;   // raw error for display
+  errorRaw?: string;
 }
 
-async function runCurl(args: string[], timeoutMs: number = 20000): Promise<{
+/**
+ * Run curl via spawn. If stdinData is provided, it is piped to curl's stdin (for -d @-).
+ * This avoids command-line argument issues with JSON in Docker environments.
+ */
+function runCurl(args: string[], stdinData?: string, timeoutMs: number = 20000): Promise<{
   stdout: string; stderr: string; exitCode: number; elapsed: number;
 }> {
-  const start = Date.now();
-  try {
-    const { stdout, stderr } = await execFileAsync('curl', args, { timeout: timeoutMs, maxBuffer: 1024 * 1024 });
-    return { stdout, stderr, exitCode: 0, elapsed: Date.now() - start };
-  } catch (err: any) {
-    return { stdout: err.stdout || '', stderr: err.stderr || err.message || '', exitCode: err.code === 'ETIMEDOUT' ? -1 : (err.status || 1), elapsed: Date.now() - start };
-  }
+  return new Promise((resolve) => {
+    const start = Date.now();
+    let stdout = '';
+    let stderr = '';
+    let done = false;
+
+    const proc = spawn('curl', args, { timeout: timeoutMs });
+
+    proc.stdout.on('data', (chunk: Buffer) => { stdout += chunk.toString(); });
+    proc.stderr.on('data', (chunk: Buffer) => { stderr += chunk.toString(); });
+
+    proc.on('close', (code) => {
+      if (done) return;
+      done = true;
+      resolve({ stdout, stderr, exitCode: code ?? 1, elapsed: Date.now() - start });
+    });
+
+    proc.on('error', (err) => {
+      if (done) return;
+      done = true;
+      resolve({ stdout, stderr: err.message, exitCode: 1, elapsed: Date.now() - start });
+    });
+
+    // Pipe body to stdin if provided
+    if (stdinData) {
+      proc.stdin.write(stdinData);
+      proc.stdin.end();
+    }
+  });
 }
 
 export async function providerRoutes(app: FastifyInstance): Promise<void> {
@@ -69,7 +92,7 @@ export async function providerRoutes(app: FastifyInstance): Promise<void> {
     const copy = providerService.createProvider({
       name: `${source.name} - Copy`,
       base_url: source.base_url,
-      api_key: source.api_key, // decrypted from source, re-encrypted on create
+      api_key: source.api_key,
       api_type: source.api_type,
       model_id: source.model_id,
       proxy_url: source.proxy_url || '',
@@ -91,7 +114,7 @@ export async function providerRoutes(app: FastifyInstance): Promise<void> {
     const proxyUrl = provider.proxy_url || '';
 
     try {
-      // Step 1: Proxy
+      // Step 1: Proxy test
       if (proxyUrl) {
         const proxyResult = await runCurl([
           '--proxy', proxyUrl, '--max-time', '10', '-s',
@@ -126,15 +149,24 @@ export async function providerRoutes(app: FastifyInstance): Promise<void> {
         steps.push({ step: 'proxy_test', status: 'skip' });
       }
 
-      // Step 2: API
+      // Step 2: API test — use -d @- to pipe body via stdin (avoids arg escaping issues in Docker)
       const apiUrl = `${provider.base_url}/chat/completions`;
       const requestBody = JSON.stringify({ model: provider.model_id, messages: [{ role: 'user', content: 'Say 1' }], max_tokens: 10, stream: false });
+
       const curlArgs: string[] = [];
       if (proxyUrl) curlArgs.push('--proxy', proxyUrl);
-      curlArgs.push('--max-time', '20', '-s', '-w', '\n__HTTP_CODE__%{http_code}', '-X', 'POST',
-        '-H', `Authorization: Bearer ${provider.api_key}`, '-H', 'Content-Type: application/json', '-d', requestBody, apiUrl);
+      curlArgs.push(
+        '--max-time', '20',
+        '-s',
+        '-w', '\n__HTTP_CODE__%{http_code}',
+        '-X', 'POST',
+        '-H', `Authorization: Bearer ${provider.api_key}`,
+        '-H', 'Content-Type: application/json',
+        '-d', '@-',   // read body from stdin
+        apiUrl,
+      );
 
-      const apiResult = await runCurl(curlArgs);
+      const apiResult = await runCurl(curlArgs, requestBody);
       const outputLines = apiResult.stdout.split('__HTTP_CODE__');
       const responseBody = outputLines[0].trim();
       const httpCode = parseInt(outputLines[1]?.trim() || '0', 10);
