@@ -59,7 +59,7 @@
     <div class="card p-6">
       <h3 class="text-sm font-medium text-dark-300 mb-4">{{ t('set.system_title') }}</h3>
       <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-        <div class="bg-dark-800/40 rounded-lg p-3"><p class="text-dark-500 text-xs">{{ t('set.version') }}</p><p class="text-dark-200 font-mono mt-1">AKDN v1.3.0</p></div>
+        <div class="bg-dark-800/40 rounded-lg p-3"><p class="text-dark-500 text-xs">{{ t('set.version') }}</p><p class="text-dark-200 font-mono mt-1">AKDN v1.4.3</p></div>
         <div class="bg-dark-800/40 rounded-lg p-3"><p class="text-dark-500 text-xs">{{ t('set.nodejs') }}</p><p class="text-dark-200 font-mono mt-1">{{ stats.nodeVersion||'-' }}</p></div>
         <div class="bg-dark-800/40 rounded-lg p-3"><p class="text-dark-500 text-xs">{{ t('set.uptime') }}</p><p class="text-dark-200 font-mono mt-1">{{ formatUptime(stats.uptime) }}</p></div>
         <div class="bg-dark-800/40 rounded-lg p-3"><p class="text-dark-500 text-xs">{{ t('set.memory') }}</p><p class="text-dark-200 font-mono mt-1">{{ stats.memoryMB??'-' }} MB</p></div>
