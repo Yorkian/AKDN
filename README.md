@@ -25,14 +25,14 @@ AKDN sits between your AI applications and API providers. Configure it once, and
 
 ```
 ┌─────────────────────┐
-│  Your AI App         │  ← Configure once: AKDN url + key
-│  (OpenClaw, etc.)    │
+│  Your AI App        │  ← Configure once: AKDN url + key
+│  (OpenClaw, etc.)   │
 └─────────┬───────────┘
           │
           ▼
 ┌─────────────────────┐
-│       AKDN           │  ← Manages keys, failover, quotas
-│  Gateway / Proxy     │
+│       AKDN          │  ← Manages keys, failover, quotas
+│  Gateway / Proxy    │
 └──┬──────┬──────┬────┘
    │      │      │
    ▼      ▼      ▼
