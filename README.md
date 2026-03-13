@@ -14,7 +14,7 @@
   <a href="#configuration">Configuration</a> •
   <a href="#how-it-works">How It Works</a> •
   <a href="#api-compatibility">API Compatibility</a> •
-  <a href="https://yorkian.notion.site/akdn" target="_blank">中文</a>
+  <a href="https://yorkian.notion.site/akdn" target="_blank">中 文</a>
 </p>
 
 ---
