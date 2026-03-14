@@ -329,7 +329,7 @@ MIT
 
 ## Disclaimer
 
-The producer has tried their best to ensure the quality of the project, however, in actual use, users need to bear the risks and losses caused by issues inherent in the software itself such as security and stability, as well as the legality of the data used. Please fully test before going live in a production environment.
+The producer has tried his best to ensure the quality of the project, however, in actual use, users need to bear the risks and losses caused by issues inherent in the software itself such as security and stability, as well as the legality of the data used. Please fully test before going live in a production environment.
 
 ---
 
