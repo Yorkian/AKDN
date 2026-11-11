@@ -314,13 +314,6 @@ pm2 delete akdn && pm2 save
 rm -rf /opt/akdn
 ```
 
-## Buy Me a Coffee（USDT）
-
-| Network       | Address                                                                 |
-|------------|----------------------------------------------------------------------|
-| BNB(BEP20) | `0x6104ff99c18405c4f3fc6bfd16adc7ff7f5b1e89`                          |
-| TRC20      | `TMwgiHHXmPrAMFNqa3eMvZpntsnKYuw7yp`                                  |
-| Aptos      | `0x4323ed79c686015848a883392ed3cbc5fe7239819933546abab8cacf9ab77f46`  |
 
 ## License
 
